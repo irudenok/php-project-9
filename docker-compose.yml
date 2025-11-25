@@ -1,0 +1,42 @@
+services:
+  # PHP-FPM Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: php-project-9
+    container_name: php-project-9
+    restart: unless-stopped
+    working_dir: /var/www/html
+    ports:
+      - "80:8000"
+    volumes:
+      - ./:/var/www/html
+    networks:
+      - php-project-9-network
+
+  # MySQL Service
+  db:
+    image: mysql:8.0
+    container_name: php-project-9-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: php-project-9
+      MYSQL_PASSWORD: secret
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    ports:
+      - "3306:3306"
+    networks:
+      - php-project-9-network
+
+volumes:
+  dbdata:
+    driver: local
+
+networks:
+  php-project-9-network:
+    driver: bridge
