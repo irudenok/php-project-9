@@ -1,5 +1,7 @@
 <?php
 
+global $app;
+
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
 use Hexlet\Code\Connection;
@@ -21,11 +23,19 @@ $app->post(
         $check['date'] = date('Y-m-d H:i:s');
 
         $pdo = Connection::get()->connect();
-        $checkedUrl = $pdo->query("SELECT name FROM urls WHERE id = {$args['url_id']}")->fetchColumn();
+        $stmt = $pdo->prepare("SELECT name FROM urls WHERE id = ?");
+        $stmt->execute([$args['url_id']]);
+        $checkedUrl = $stmt->fetchColumn() ?: '';
 
         try {
             $client = new Client();
+
+            if (empty($checkedUrl)) {
+                $this->get('flash')->addMessage('failure', 'URL не найден в базе данных');
+                return Misc\redirectToUrl($request, 'show_url_info', ['id' => $args['url_id']]);
+            }
             $guzzleResponse = $client->request('GET', $checkedUrl);
+
             $check['status_code'] = $guzzleResponse->getStatusCode();
             $htmlContent = $guzzleResponse->getBody()->getContents();
         } catch (TransferException $e) {
@@ -51,7 +61,7 @@ $app->post(
             $check['description'] = $descElement->attr('content');
         }
 
-        if (isset($check['status_code'])) {
+        if (!empty($check['status_code'])) {
             try {
                 $query = new Query($pdo, 'url_checks');
                 $newId = $query->insertValuesChecks($check);
