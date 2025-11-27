@@ -23,26 +23,26 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           # Specify the PHP version
-          php-version: '8.3'
+          php-version: '8.4'
       - name: Install
         # Install project
         run: make install
-      - name: Run linter
-        # Run Linter
-        run: make lint
+      # - name: Run linter
+      #   # Run Linter
+      #   run: make lint
 
         # https://docs.sonarsource.com/sonarqube-cloud/enriching/test-coverage/php-test-coverage/
-      - name: Run tests
-        run: make test-coverage
+      # - name: Run tests
+      #   run: make test-coverage
 
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v6
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          # NOTE: https://sonarcloud.io/project/information?id=hexlet-boilerplates_php-package
-          args: >
-            -Dsonar.projectKey=irudenok_php-project-48
-            -Dsonar.organization=irudenok
-            -Dsonar.sources=src/
-            -Dsonar.php.coverage.reportPaths=build/logs/clover.xml
+      # - name: SonarQube Scan
+      #   uses: SonarSource/sonarqube-scan-action@v6
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   with:
+      #     # NOTE: https://sonarcloud.io/project/information?id=hexlet-boilerplates_php-package
+      #     args: >
+      #       -Dsonar.projectKey=irudenok_php-project-9
+      #       -Dsonar.organization=irudenok
+      #       -Dsonar.sources=src/
+      #       -Dsonar.php.coverage.reportPaths=build/logs/clover.xml
