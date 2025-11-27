@@ -4,3 +4,6 @@ start:
 
 validate:
 	composer validate
+
+install:
+	composer install
