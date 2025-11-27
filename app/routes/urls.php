@@ -49,7 +49,12 @@ $app->get('/urls/{id}', function (ServerRequestInterface $request, Response $res
 })->setName('show_url_info');
 
 $app->post('/urls', function (ServerRequestInterface $request, Response $response): mixed {
-    $url = $request->getParsedBody()['url'];
+    $body = $request->getParsedBody();
+    $url = $body['url'] ?? [];
+
+    if (empty($url) || !isset($url['name'])) {
+        $errors['name'] = 'URL не должен быть пустым';
+    }
 
     $url['date'] = date('Y-m-d H:i:s');
     $errors = [];
