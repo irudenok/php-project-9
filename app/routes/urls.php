@@ -52,7 +52,7 @@ $app->get('/urls/{id}', function (ServerRequestInterface $request, Response $res
 
 $app->post('/urls', function (ServerRequestInterface $request, Response $response): mixed {
     $body = $request->getParsedBody();
-    $url = $body['url'] ?? [];
+    $url = is_array($body) ? ($body['url'] ?? []) : [];
 
     if (empty($url) || !isset($url['name'])) {
         $errors['name'] = 'URL не должен быть пустым';
