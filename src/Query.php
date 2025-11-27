@@ -10,7 +10,8 @@ class Query
         private PDO $pdo,
         private string $table
     // phpcs:ignore error
-    ) {}
+    ) {
+    }
 
     public function insertValues(string $name, string $created_at): int
     {

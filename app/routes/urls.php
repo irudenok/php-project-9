@@ -54,7 +54,8 @@ $app->post('/urls', function (ServerRequestInterface $request, Response $respons
     $url['date'] = date('Y-m-d H:i:s');
     $errors = [];
 
-    if ((filter_var($url['name'], FILTER_VALIDATE_URL) === false) || (!in_array(parse_url($url['name'], PHP_URL_SCHEME), ['http', 'https']))) {
+    $scheme = parse_url($url['name'], PHP_URL_SCHEME);
+    if (!filter_var($url['name'], FILTER_VALIDATE_URL) || !in_array($scheme, ['http', 'https'])) {
         $errors['name'] = 'Некорректный URL';
     }
 
