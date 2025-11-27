@@ -34,7 +34,7 @@ $app->post(
                 $this->get('flash')->addMessage('failure', 'URL не найден в базе данных');
                 return Misc\redirectToUrl($request, 'show_url_info', ['id' => $args['url_id']]);
             }
-            $guzzleResponse = $client->request('GET', $checkedUrl);
+            $guzzleResponse = $client->request('GET', (string) $checkedUrl);
 
             $check['status_code'] = $guzzleResponse->getStatusCode();
             $htmlContent = $guzzleResponse->getBody()->getContents();

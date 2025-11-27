@@ -1,5 +1,7 @@
 <?php
 
+global $app;
+
 use Hexlet\Code\Connection;
 use Hexlet\Code\Query;
 use Psr\Http\Message\ServerRequestInterface;
