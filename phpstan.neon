@@ -4,5 +4,5 @@ parameters:
         - app/
         - src/
     ignoreErrors:
-        - '#Function createApp\(\) return type with generic class#'
-        - '#Cannot access offset \'url\' on array\|object#'
+        - '#Function createApp\(\) return type with generic class Slim\\App does not specify its types: TContainerInterface#'
+        - '#app/routes/urls\.php:\d+.*Cannot access offset \'url\' on array\|object#'
