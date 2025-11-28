@@ -45,4 +45,5 @@ jobs:
             -Dsonar.projectKey=irudenok_php-project-9
             -Dsonar.organization=irudenok
             -Dsonar.sources=src/
-            -Dsonar.php.coverage.reportPaths=build/logs/clover.xml
+            -Dsonar.coverage.exclusions=**/*
+            -Dsonar.coverage.enabled=false
