@@ -1,0 +1,8 @@
+parameters:
+    level: 8
+    paths:
+        - app/
+        - src/
+    ignoreErrors:
+        - '#Function createApp\(\) return type with generic class#'
+        - '#Cannot access offset \'url\' on array\|object#'

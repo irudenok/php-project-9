@@ -5,13 +5,9 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Slim\Factory\AppFactory;
 use Slim\Flash\Messages;
 use Hexlet\Code\Renderer;
-use Slim\App;
 use DI\Container;
 
-/**
- * @return App<\Slim\Interfaces\RouteCollectorProxyInterface>
- */
-function createApp(): App
+function createApp(): \Slim\App
 {
     $container = new Container();
 
