@@ -6,8 +6,12 @@ use Slim\Factory\AppFactory;
 use Slim\Flash\Messages;
 use Hexlet\Code\Renderer;
 use DI\Container;
+use Slim\App;
 
-function createApp(): \Slim\App
+/**
+ * @return App<\Psr\Container\ContainerInterface>
+ */
+function createApp(): App
 {
     $container = new Container();
 

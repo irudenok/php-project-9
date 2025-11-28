@@ -72,8 +72,10 @@ return function ($app): void {
 
     $app->post('/urls', function (ServerRequestInterface $request, Response $response): mixed {
         $body = $request->getParsedBody();
+
+        /** @var array<string, mixed> $body */
         $urlData = $body['url'] ?? [];
-        $urlName = isset($urlData['name']) ? (string)$urlData['name'] : '';
+        $urlName = isset($urlData['name']) ? (string) $urlData['name'] : '';
 
         // Создаем валидатор с правильной структурой данных
         $data = ['name' => $urlName];
