@@ -8,6 +8,9 @@ use Hexlet\Code\Renderer;
 use Slim\App;
 use DI\Container;
 
+/**
+ * @return App<\Slim\Interfaces\RouteCollectorProxyInterface>
+ */
 function createApp(): App
 {
     $container = new Container();
