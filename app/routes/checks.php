@@ -12,7 +12,7 @@ use Symfony\Component\DomCrawler\Crawler;
 
 use function Hexlet\Code\Misc\redirectToUrl;
 
-return function ($app) {
+return function ($app): void {
     $app->post(
         '/urls/{url_id:[0-9]+}/checks',
         function (

@@ -9,7 +9,8 @@ class UrlCheckRepository
     public function __construct(
         private PDO $pdo
     // phpcs:ignore error
-    ) {}
+    ) {
+    }
 
     public function save(array $check): int
     {

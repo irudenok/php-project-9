@@ -9,7 +9,8 @@ class UrlRepository
     public function __construct(
         private PDO $pdo
     // phpcs:ignore error
-    ) {}
+    ) {
+    }
 
     public function save(string $name, string $createdAt): int
     {

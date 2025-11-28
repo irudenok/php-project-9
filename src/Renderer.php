@@ -7,7 +7,8 @@ class Renderer
     public function __construct(
         private string $templatesPath
     // phpcs:ignore error
-    ) {}
+    ) {
+    }
 
     public function render(string $template, array $data = []): string
     {

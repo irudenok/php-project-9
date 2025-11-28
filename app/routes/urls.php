@@ -10,7 +10,7 @@ use Valitron\Validator;
 
 use function Hexlet\Code\Misc\redirectToUrl;
 
-return function ($app) {
+return function ($app): void {
     $app->get('/urls', function (ServerRequestInterface $request, Response $response): Response {
         $pdo = Connection::get()->connect();
         $urlRepository = new UrlRepository($pdo);
@@ -39,29 +39,36 @@ return function ($app) {
         return $response;
     })->setName('list');
 
-    $app->get('/urls/{id:[0-9]+}', function (ServerRequestInterface $request, Response $response, array $args): Response {
-        $pdo = Connection::get()->connect();
-        $urlRepository = new UrlRepository($pdo);
-        $urlCheckRepository = new UrlCheckRepository($pdo);
+    $app->get(
+        '/urls/{id:[0-9]+}',
+        function (
+            ServerRequestInterface $request,
+            Response $response,
+            array $args
+        ): Response {
+            $pdo = Connection::get()->connect();
+            $urlRepository = new UrlRepository($pdo);
+            $urlCheckRepository = new UrlCheckRepository($pdo);
 
-        $url = $urlRepository->findById((int) $args['id']);
+            $url = $urlRepository->findById((int) $args['id']);
 
-        if (!$url) {
-            return $response->withStatus(404);
+            if (!$url) {
+                return $response->withStatus(404);
+            }
+
+            $checks = $urlCheckRepository->findByUrlId((int) $args['id']);
+            $flashes = $this->get('flash')->getMessages();
+            $params = [
+                'url' => $url,
+                'checks' => $checks,
+                'flash' => $flashes,
+                'currentPage' => '/urls'
+            ];
+            $output = $this->get('renderer')->render('urls/show.phtml', $params);
+            $response->getBody()->write($output);
+            return $response;
         }
-
-        $checks = $urlCheckRepository->findByUrlId((int) $args['id']);
-        $flashes = $this->get('flash')->getMessages();
-        $params = [
-            'url' => $url,
-            'checks' => $checks,
-            'flash' => $flashes,
-            'currentPage' => '/urls'
-        ];
-        $output = $this->get('renderer')->render('urls/show.phtml', $params);
-        $response->getBody()->write($output);
-        return $response;
-    })->setName('show_url_info');
+    )->setName('show_url_info');
 
     $app->post('/urls', function (ServerRequestInterface $request, Response $response): mixed {
         $body = $request->getParsedBody();
@@ -93,8 +100,8 @@ return function ($app) {
             }
 
             $params = [
-                'url' => ['name' => $urlName], 
-                'errors' => $firstErrors, 
+                'url' => ['name' => $urlName],
+                'errors' => $firstErrors,
                 'currentPage' => '/'
             ];
             $output = $this->get('renderer')->render('home.phtml', $params);

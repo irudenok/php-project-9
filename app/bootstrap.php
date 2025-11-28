@@ -1,19 +1,12 @@
 <?php
 
-error_reporting(0);
-ini_set('display_errors', '0');
-ini_set('display_startup_errors', '0');
-
-require_once __DIR__ . '/../vendor/autoload.php';
-
 use Slim\Factory\AppFactory;
 use Slim\Flash\Messages;
 use DI\Container;
 use Hexlet\Code\Renderer;
+use Slim\App;
 
-session_start();
-
-function createApp()
+function createApp(): App
 {
     $container = new Container();
 
