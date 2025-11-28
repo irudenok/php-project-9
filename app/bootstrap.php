@@ -6,24 +6,22 @@ use Slim\Factory\AppFactory;
 use Slim\Flash\Messages;
 use Hexlet\Code\Renderer;
 use Slim\App;
+use DI\Container;
 
 function createApp(): App
 {
-    $app = AppFactory::create();
+    $container = new Container();
+
+    $container->set('renderer', function () {
+        return new Renderer(__DIR__ . '/../templates');
+    });
+
+    $container->set('flash', function () {
+        return new Messages();
+    });
+
+    $app = AppFactory::createFromContainer($container);
     $app->addErrorMiddleware(true, true, true);
-
-    $renderer = new Renderer(__DIR__ . '/../templates');
-    $flash = new Messages();
-
-    $container = $app->getContainer();
-
-    $container->set('renderer', function () use ($renderer): Renderer {
-        return $renderer;
-    });
-
-    $container->set('flash', function () use ($flash): Messages {
-        return $flash;
-    });
 
     $routes = [
         'web.php',
