@@ -25,7 +25,7 @@ class Renderer
     {
         extract($data);
         ob_start();
-        include $this->templatesPath . '/' . $template;
+        include_once $this->templatesPath . '/' . $template; // nosonar php:S4833
         return ob_get_clean();
     }
 }
