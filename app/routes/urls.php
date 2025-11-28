@@ -72,6 +72,7 @@ return function ($app): void {
 
     $app->post('/urls', function (ServerRequestInterface $request, Response $response): mixed {
         $body = $request->getParsedBody();
+        $urlData = $body['url'] ?? [];
         $urlName = $body['url']['name'] ?? '';
 
         // Создаем валидатор с правильной структурой данных
@@ -96,7 +97,11 @@ return function ($app): void {
             // Берем первую ошибку для каждого поля
             $firstErrors = [];
             foreach ($errors as $field => $fieldErrors) {
-                $firstErrors[$field] = is_array($fieldErrors) ? $fieldErrors[0] : $fieldErrors;
+                if (is_array($fieldErrors)) {
+                    $firstErrors[$field] = $fieldErrors[0] ?? $fieldErrors;
+                } else {
+                    $firstErrors[$field] = $fieldErrors;
+                }
             }
 
             $params = [

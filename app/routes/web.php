@@ -8,8 +8,8 @@ return function ($app): void {
     $app->get('/', function (ServerRequestInterface $request, Response $response): ResponseInterface {
         $params = [
             'currentPage' => '/',
-            'url' => $url ?? [],
-            'errors' => $errors ?? []
+            'url' => [],
+            'errors' => []
         ];
 
         $output = $this->get('renderer')->render('home.phtml', $params);
