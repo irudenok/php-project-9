@@ -1,4 +1,6 @@
-<?php
+<?php // phpcs:ignore warning
+
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use Slim\Factory\AppFactory;
 use Slim\Flash\Messages;
