@@ -1,11 +1,20 @@
 <?php
 
-global $app;
-
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Response;
 
-$app->get('/', function (ServerRequestInterface $request, Response $response): ResponseInterface {
-    return $this->get('renderer')->render($response, 'main.phtml');
-})->setName('home');
+return function ($app) {
+    $app->get('/', function (ServerRequestInterface $request, Response $response): ResponseInterface {
+        $params = [
+            'currentPage' => '/',
+            'url' => $url ?? [],
+            'errors' => $errors ?? []
+        ];
+
+        $output = $this->get('renderer')->render('home.phtml', $params);
+        $response->getBody()->write($output);
+
+        return $response;
+    })->setName('home');
+};

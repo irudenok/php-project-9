@@ -1,105 +1,128 @@
 <?php
 
-global $app;
-
 use Hexlet\Code\Connection;
-use Hexlet\Code\Query;
+use Hexlet\Code\UrlRepository;
+use Hexlet\Code\UrlCheckRepository;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Response;
-use Hexlet\Code\Misc;
+use Illuminate\Support\Collection;
+use Valitron\Validator;
 
-$app->get('/urls', function (ServerRequestInterface $request, Response $response): Response {
-    $pdo = Connection::get()->connect();
-    $allUrls = $pdo->query("SELECT * FROM urls")->fetchAll(\PDO::FETCH_ASSOC);
-    $recentChecks = $pdo->query("SELECT DISTINCT ON (url_id) url_id, created_at, status_code
-                                 FROM url_checks
-                                 ORDER BY url_id, created_at DESC;")->fetchAll(\PDO::FETCH_ASSOC);
+use function Hexlet\Code\Misc\redirectToUrl;
 
-    $combined = array_map(function ($url) use ($recentChecks) {
-        foreach ($recentChecks as $recCheck) {
-            if ($url['id'] === $recCheck['url_id']) {
-                $url['last_check_time'] = $recCheck['created_at'];
-                $url['status_code'] = $recCheck['status_code'];
-            }
-        }
-        return $url;
-    }, $allUrls);
-
-    $params = ['urls' => array_reverse($combined)];
-    return $this->get('renderer')->render($response, 'list.phtml', $params);
-})->setName('list');
-
-$app->get('/urls/{id}', function (ServerRequestInterface $request, Response $response, array $args): Response {
-
-    $pdo = Connection::get()->connect();
-    $allUrls = $pdo->query("SELECT * FROM urls")->fetchAll(PDO::FETCH_ASSOC);
-
-    foreach ($allUrls as $item) {
-        if ($item['id'] == $args['id']) {
-            $urlFound = $item;
-        }
-    }
-
-    if (!isset($urlFound)) {
-        return $response->withStatus(404);
-    }
-
-    $checks = $pdo->query("SELECT * FROM url_checks WHERE url_id = {$args['id']}")->fetchAll(\PDO::FETCH_ASSOC);
-    $flashes = $this->get('flash')->getMessages();
-    $params = ['url' => $urlFound, 'checks' => array_reverse($checks), 'flash' => $flashes];
-    return $this->get('renderer')->render($response, 'view.phtml', $params);
-})->setName('show_url_info');
-
-$app->post('/urls', function (ServerRequestInterface $request, Response $response): mixed {
-    $body = $request->getParsedBody();
-    $url = is_array($body) ? ($body['url'] ?? []) : [];
-
-    if (empty($url) || !isset($url['name'])) {
-        $errors['name'] = 'URL не должен быть пустым';
-    }
-
-    $url['date'] = date('Y-m-d H:i:s');
-    $errors = [];
-
-    $scheme = parse_url($url['name'], PHP_URL_SCHEME);
-    if (!filter_var($url['name'], FILTER_VALIDATE_URL) || !in_array($scheme, ['http', 'https'])) {
-        $errors['name'] = 'Некорректный URL';
-    }
-
-    if (strlen($url['name']) < 1) {
-        $errors['name'] = 'URL не должен быть пустым';
-    }
-
-    if (count($errors) === 0) {
-        $url['name'] = parse_url($url['name'], PHP_URL_SCHEME) . "://" . parse_url($url['name'], PHP_URL_HOST);
+return function ($app) {
+    $app->get('/urls', function (ServerRequestInterface $request, Response $response): Response {
         $pdo = Connection::get()->connect();
-        $currentUrls = $pdo->query("SELECT * FROM urls")->fetchAll(PDO::FETCH_ASSOC);
+        $urlRepository = new UrlRepository($pdo);
+        $urlCheckRepository = new UrlCheckRepository($pdo);
 
-        foreach ($currentUrls as $item) {
-            if ($item['name'] === $url['name']) {
-                $urlFound = $item;
-                $idFound = $item['id'];
-            }
+        $allUrls = $urlRepository->findAll();
+        $recentChecks = $urlCheckRepository->findLatestChecks();
+
+        $checksCollection = Collection::make($recentChecks)->keyBy('url_id');
+
+        $combined = array_map(function ($url) use ($checksCollection) {
+            $check = $checksCollection->get($url['id']);
+
+            $url['last_check_time'] = $check['created_at'] ?? null;
+            $url['status_code'] = $check['status_code'] ?? null;
+
+            return $url;
+        }, $allUrls);
+
+        $params = [
+            'urls' => $combined,
+            'currentPage' => '/urls'
+        ];
+        $output = $this->get('renderer')->render('urls/index.phtml', $params);
+        $response->getBody()->write($output);
+        return $response;
+    })->setName('list');
+
+    $app->get('/urls/{id:[0-9]+}', function (ServerRequestInterface $request, Response $response, array $args): Response {
+        $pdo = Connection::get()->connect();
+        $urlRepository = new UrlRepository($pdo);
+        $urlCheckRepository = new UrlCheckRepository($pdo);
+
+        $url = $urlRepository->findById((int) $args['id']);
+
+        if (!$url) {
+            return $response->withStatus(404);
         }
 
-        $newId = null;
-        if (!isset($urlFound)) {
-            try {
-                $pdo = Connection::get()->connect();
-                $query = new Query($pdo, 'urls');
-                $newId = $query->insertValues($url['name'], $url['date']);
-            } catch (\PDOException $e) {
-                echo $e->getMessage();
+        $checks = $urlCheckRepository->findByUrlId((int) $args['id']);
+        $flashes = $this->get('flash')->getMessages();
+        $params = [
+            'url' => $url,
+            'checks' => $checks,
+            'flash' => $flashes,
+            'currentPage' => '/urls'
+        ];
+        $output = $this->get('renderer')->render('urls/show.phtml', $params);
+        $response->getBody()->write($output);
+        return $response;
+    })->setName('show_url_info');
+
+    $app->post('/urls', function (ServerRequestInterface $request, Response $response): mixed {
+        $body = $request->getParsedBody();
+        $urlName = $body['url']['name'] ?? '';
+
+        // Создаем валидатор с правильной структурой данных
+        $data = ['name' => $urlName];
+        $validator = new Validator($data);
+
+        $validator->rule('required', 'name')->message('URL не должен быть пустым');
+        $validator->rule('lengthMin', 'name', 1)->message('URL не должен быть пустым');
+        $validator->rule('url', 'name')->message('Некорректный URL');
+        $validator->rule('urlActive', 'name')->message('Некорректный URL');
+
+        Validator::addRule('urlActive', function ($field, $value, $params, $fields) {
+            if (empty($value)) {
+                return false;
             }
-            $this->get('flash')->addMessage('success', 'Страница успешно добавлена');
+            $scheme = parse_url($value, PHP_URL_SCHEME);
+            return in_array($scheme, ['http', 'https']);
+        }, 'должен иметь схему http или https');
+
+        if (!$validator->validate()) {
+            $errors = $validator->errors();
+            // Берем первую ошибку для каждого поля
+            $firstErrors = [];
+            foreach ($errors as $field => $fieldErrors) {
+                $firstErrors[$field] = is_array($fieldErrors) ? $fieldErrors[0] : $fieldErrors;
+            }
+
+            $params = [
+                'url' => ['name' => $urlName], 
+                'errors' => $firstErrors, 
+                'currentPage' => '/'
+            ];
+            $output = $this->get('renderer')->render('home.phtml', $params);
+            $response->getBody()->write($output);
+            return $response->withStatus(422);
+        }
+
+        $normalizedUrl = parse_url($urlName, PHP_URL_SCHEME) . "://" . parse_url($urlName, PHP_URL_HOST);
+
+        $pdo = Connection::get()->connect();
+        $urlRepository = new UrlRepository($pdo);
+
+        $existingUrl = $urlRepository->findByName($normalizedUrl);
+
+        $id = null;
+        if (!$existingUrl) {
+            try {
+                $id = $urlRepository->save($normalizedUrl, date('Y-m-d H:i:s'));
+                $this->get('flash')->addMessage('success', 'Страница успешно добавлена');
+            } catch (\PDOException $e) {
+                $this->get('flash')->addMessage('failure', 'Ошибка при сохранении URL');
+                return redirectToUrl($request, 'home');
+            }
         } else {
+            $id = $existingUrl['id'];
             $this->get('flash')->addMessage('success', 'Страница уже существует');
         }
 
-        return Misc\redirectToUrl($request, 'show_url_info', ['id' => $idFound ?? $newId]);
-    }
-
-    $params = ['url' => $url, 'errors' => $errors];
-
-    return $this->get('renderer')->render($response->withStatus(422), "main.phtml", $params);
-});
+        return redirectToUrl($request, 'show_url_info', ['id' => $id]);
+    });
+};

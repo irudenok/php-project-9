@@ -20,14 +20,19 @@
         "slim/flash": "^0.4.0",
         "guzzlehttp/guzzle": "^7.10",
         "symfony/dom-crawler": "^7.3",
-        "symfony/css-selector": "^7.3"
+        "symfony/css-selector": "^7.3",
+        "illuminate/collections": "^12.40",
+        "vlucas/valitron": "^1.4"
     },
     "autoload": {
         "psr-4": {
             "Hexlet\\Code\\": "src/"
         },
         "files": [
-            "src/Misc.php"
+            "src/Misc.php",
+            "app/routes/web.php",
+            "app/routes/urls.php", 
+            "app/routes/checks.php"
         ]
     }
 }
