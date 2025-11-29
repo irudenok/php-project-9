@@ -8,7 +8,6 @@ class UrlRepository
 {
     public function __construct(
         private PDO $pdo
-    // phpcs:ignore error
     ) {
     }
 
@@ -16,37 +15,35 @@ class UrlRepository
     {
         $sql = "INSERT INTO urls (name, created_at) VALUES (:name, :created_at)";
         $stmt = $this->pdo->prepare($sql);
-
-        $stmt->bindValue(':name', $name);
-        $stmt->bindValue(':created_at', $createdAt);
-        $stmt->execute();
+        $stmt->execute([
+            'name' => $name,
+            'created_at' => $createdAt
+        ]);
 
         return (int) $this->pdo->lastInsertId();
     }
 
     public function findById(int $id): ?array
     {
-        $sql = "SELECT * FROM urls WHERE id = :id";
+        $sql = "SELECT id, name, created_at FROM urls WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':id', $id);
-        $stmt->execute();
+        $stmt->execute(['id' => $id]);
 
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 
     public function findByName(string $name): ?array
     {
-        $sql = "SELECT * FROM urls WHERE name = :name";
+        $sql = "SELECT id, name, created_at FROM urls WHERE name = :name";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':name', $name);
-        $stmt->execute();
+        $stmt->execute(['name' => $name]);
 
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 
     public function findAll(): array
     {
-        $sql = "SELECT * FROM urls ORDER BY created_at DESC";
+        $sql = "SELECT id, name, created_at FROM urls ORDER BY created_at DESC";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
 

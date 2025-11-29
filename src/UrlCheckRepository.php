@@ -8,7 +8,6 @@ class UrlCheckRepository
 {
     public function __construct(
         private PDO $pdo
-    // phpcs:ignore error
     ) {
     }
 
@@ -18,21 +17,22 @@ class UrlCheckRepository
                 VALUES (:url_id, :status_code, :h1, :title, :description, :created_at)";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':url_id', $check['url_id']);
-        $stmt->bindValue(':status_code', $check['status_code'] ?? null);
-        $stmt->bindValue(':h1', $check['h1'] ?? null);
-        $stmt->bindValue(':title', $check['title'] ?? null);
-        $stmt->bindValue(':description', $check['description'] ?? null);
-        $stmt->bindValue(':created_at', $check['date']);
-        $stmt->execute();
+        $stmt->execute([
+            'url_id' => $check['url_id'],
+            'status_code' => $check['status_code'] ?? null,
+            'h1' => $check['h1'] ?? null,
+            'title' => $check['title'] ?? null,
+            'description' => $check['description'] ?? null,
+            'created_at' => $check['date']
+        ]);
 
         return (int) $this->pdo->lastInsertId();
     }
 
     public function findLatestChecks(): array
     {
-        $sql = "SELECT DISTINCT ON (url_id) url_id, created_at, status_code
-                FROM url_checks
+        $sql = "SELECT url_id, created_at, status_code 
+                FROM url_checks 
                 ORDER BY url_id, created_at DESC";
 
         $stmt = $this->pdo->prepare($sql);
@@ -43,10 +43,13 @@ class UrlCheckRepository
 
     public function findByUrlId(int $urlId): array
     {
-        $sql = "SELECT * FROM url_checks WHERE url_id = :url_id ORDER BY created_at DESC";
+        $sql = "SELECT id, url_id, status_code, h1, title, description, created_at 
+                FROM url_checks 
+                WHERE url_id = :url_id 
+                ORDER BY created_at DESC";
+
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':url_id', $urlId);
-        $stmt->execute();
+        $stmt->execute(['url_id' => $urlId]);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

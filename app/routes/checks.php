@@ -2,9 +2,6 @@
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
-use Hexlet\Code\Connection;
-use Hexlet\Code\UrlRepository;
-use Hexlet\Code\UrlCheckRepository;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Response;
@@ -20,15 +17,14 @@ return function ($app): void {
             Response $response,
             array $args
         ): ResponseInterface {
-            $pdo = Connection::get()->connect();
-            $urlRepository = new UrlRepository($pdo);
-            $urlCheckRepository = new UrlCheckRepository($pdo);
+            $urlRepository = $this->get('urlRepository');
+            $urlCheckRepository = $this->get('urlCheckRepository');
 
             $url = $urlRepository->findById((int) $args['url_id']);
 
             if (!$url) {
                 $this->get('flash')->addMessage('failure', 'URL не найден в базе данных');
-                return redirectToUrl($request, 'show_url_info', ['id' => $args['url_id']]);
+                return redirectToUrl($request, 'urls.show', ['id' => $args['url_id']]);
             }
 
             $check = [
@@ -44,7 +40,7 @@ return function ($app): void {
                 $htmlContent = $guzzleResponse->getBody()->getContents();
             } catch (TransferException $e) {
                 $this->get('flash')->addMessage('failure', 'Произошла ошибка при проверке, не удалось подключиться');
-                return redirectToUrl($request, 'show_url_info', ['id' => $args['url_id']]);
+                return redirectToUrl($request, 'urls.show', ['id' => $args['url_id']]);
             }
 
             $crawler = new Crawler($htmlContent);
@@ -73,7 +69,7 @@ return function ($app): void {
                 }
             }
 
-            return redirectToUrl($request, 'show_url_info', ['id' => $args['url_id']]);
+            return redirectToUrl($request, 'urls.show', ['id' => $args['url_id']]);
         }
-    );
+    )->setName('urls.checks');
 };

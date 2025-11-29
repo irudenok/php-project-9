@@ -6,7 +6,6 @@ class Renderer
 {
     public function __construct(
         private string $templatesPath
-    // phpcs:ignore error
     ) {
     }
 
@@ -16,7 +15,6 @@ class Renderer
 
         $layoutData = $data;
         $layoutData['content'] = $content;
-        $layoutData['currentPage'] = $data['currentPage'] ?? '';
 
         return $this->renderTemplate('layout.phtml', $layoutData);
     }
@@ -25,7 +23,7 @@ class Renderer
     {
         extract($data);
         ob_start();
-        include_once $this->templatesPath . '/' . $template; // nosonar php:S4833
+        include_once $this->templatesPath . '/' . $template;
         return ob_get_clean();
     }
 }

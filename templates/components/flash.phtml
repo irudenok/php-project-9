@@ -1,8 +1,12 @@
 <?php if (!empty($flash)) : ?>
     <?php if (isset($flash['success'])) : ?>
-    <div class="alert alert-success" role="alert"><?= $flash['success'][0] ?></div>
+        <?php foreach ($flash['success'] as $message) : ?>
+            <div class="alert alert-success" role="alert"><?= $message ?></div>
+        <?php endforeach; ?>
     <?php endif; ?>
     <?php if (isset($flash['failure'])) : ?>
-    <div class="alert alert-danger" role="alert"><?= $flash['failure'][0] ?></div>
+        <?php foreach ($flash['failure'] as $message) : ?>
+            <div class="alert alert-danger" role="alert"><?= $message ?></div>
+        <?php endforeach; ?>
     <?php endif; ?>
 <?php endif; ?>

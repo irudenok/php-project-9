@@ -11,11 +11,12 @@
         </thead>
         <tbody>
             <?php foreach ($urls as $url) : ?>
+            <?php $check = $checksCollection->get($url['id']) ?>
             <tr>
                 <td><?= $url['id'] ?></td>
-                <td><a href="/urls/<?= $url['id'] ?>"><?= $url['name'] ?></a></td>
-                <td><?= $url['last_check_time'] ?? '-' ?></td>
-                <td><?= $url['status_code'] ?? '-' ?></td>
+                <td><a href="<?= $routeParser->urlFor('urls.show', ['id' => $url['id']]) ?>"><?= $url['name'] ?></a></td>
+                <td><?= $check['created_at'] ?? '-' ?></td>
+                <td><?= $check['status_code'] ?? '-' ?></td>
             </tr>
             <?php endforeach; ?>
         </tbody>
