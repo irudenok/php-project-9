@@ -18,6 +18,7 @@ return function ($app): void {
         $allUrls = $urlRepository->findAll();
         $recentChecks = $urlCheckRepository->findLatestChecks();
 
+        /** @var array<int, array<string, mixed>> $recentChecks */
         $checksCollection = Collection::make($recentChecks)->keyBy('url_id');
 
         $params = [
