@@ -8,7 +8,13 @@
                 class="form-control form-control-lg <?= isset($errors['name']) ? 'is-invalid' : '' ?>"
                 placeholder="https://www.example.com">
                 <?php if (isset($errors['name'])) : ?>
-                <div class="invalid-feedback d-block"><?= $errors['name'] ?></div>
+                    <?php if (is_array($errors['name'])) : ?>
+                        <?php foreach ($errors['name'] as $error) : ?>
+                            <div class="invalid-feedback d-block"><?= $error ?></div>
+                        <?php endforeach ?>
+                    <?php else : ?>
+                        <div class="invalid-feedback d-block"><?= $errors['name'] ?></div>
+                    <?php endif ?>
                 <?php endif ?>
             </div>
             <div class="col-2">
